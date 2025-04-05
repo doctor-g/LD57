@@ -2,12 +2,9 @@ import 'dart:async';
 
 import 'package:flame/components.dart';
 import 'package:flame/extensions.dart';
-import 'package:flutter/material.dart' hide Image;
+import 'package:flame/rendering.dart';
 
 class KeyIndicator extends PositionComponent {
-  static const _inactiveColor = Colors.black26;
-  static const _activeColor = Colors.white;
-
   final Image image;
   late final SpriteComponent _spriteComponent;
 
@@ -22,10 +19,10 @@ class KeyIndicator extends PositionComponent {
   }
 
   void makeActive() {
-    _spriteComponent.scale = Vector2.all(2.0);
+    _spriteComponent.decorator = PaintDecorator.tint(const Color(0xAAFFFF00));
   }
 
   void makeInactive() {
-    _spriteComponent.scale = Vector2.all(1.0);
+    _spriteComponent.decorator = Decorator();
   }
 }
