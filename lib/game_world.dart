@@ -23,18 +23,22 @@ class GameWorld extends World with KeyboardHandler, HasGameRef<FishFaceGame> {
 
   final TextComponent _statusMessage = TextComponent();
 
-  final _indicators = {
-    LogicalKeyboardKey.arrowLeft: KeyIndicator('LEFT')
-      ..position = Vector2(500, lrKeyHeight),
-    LogicalKeyboardKey.arrowRight: KeyIndicator('RIGHT')
-      ..position = Vector2(700, lrKeyHeight),
-    LogicalKeyboardKey.arrowUp: KeyIndicator('UP')
-      ..position = Vector2(600, 300),
-  };
+  final _indicators = <LogicalKeyboardKey, KeyIndicator>{};
 
   @override
   FutureOr<void> onLoad() async {
     await super.onLoad();
+
+    _indicators.addAll({
+      LogicalKeyboardKey.arrowLeft: KeyIndicator(
+        Flame.images.fromCache('left.png'),
+      )..position = Vector2(500, lrKeyHeight),
+      LogicalKeyboardKey.arrowRight: KeyIndicator(
+        Flame.images.fromCache('right.png'),
+      )..position = Vector2(700, lrKeyHeight),
+      LogicalKeyboardKey.arrowUp: KeyIndicator(Flame.images.fromCache('up.png'))
+        ..position = Vector2(600, 300),
+    });
 
     // Background
     add(
