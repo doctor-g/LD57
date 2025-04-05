@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 final _random = Random();
+final _lowPoleAngle = -12 * degrees2Radians;
 
 class GameWorld extends World with KeyboardHandler, HasGameRef<FishFaceGame> {
   static const lrKeyHeight = 450.0;
@@ -20,6 +21,7 @@ class GameWorld extends World with KeyboardHandler, HasGameRef<FishFaceGame> {
   var _misses = 0;
   _State? _state;
   late final Face _face;
+  late final Pole _pole;
 
   final TextComponent _statusMessage = TextComponent();
 
@@ -52,9 +54,10 @@ class GameWorld extends World with KeyboardHandler, HasGameRef<FishFaceGame> {
     _face = Face()..position = Vector2(100, 90);
     add(_face);
     add(
-      Pole()
-        ..position = Vector2(-40, 500)
-        ..angle = -12 * degrees2Radians,
+      _pole =
+          Pole()
+            ..position = Vector2(-40, 500)
+            ..angle = _lowPoleAngle,
     );
 
     for (final indicator in _indicators.values) {
@@ -217,6 +220,9 @@ class _KeyReactiveState extends _State {
 }
 
 class _CatchState extends _State with KeyboardHandler {
+  static const _raiseDuration = 0.5;
+  static const _raiseAmount = -30.0 * degrees2Radians;
+
   late final FacePart _part;
   var _listeningForKeyEvent = false;
 
@@ -238,6 +244,23 @@ class _CatchState extends _State with KeyboardHandler {
             ),
           );
     add(_part);
+
+    game.world._pole.add(
+      RotateEffect.by(
+        _raiseAmount,
+        CurvedEffectController(_raiseDuration, Curves.easeIn),
+      ),
+    );
+  }
+
+  @override
+  void onRemove() {
+    game.world._pole.add(
+      RotateEffect.by(
+        -_raiseAmount,
+        CurvedEffectController(_raiseDuration, Curves.easeOut),
+      ),
+    );
   }
 
   @override
