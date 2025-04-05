@@ -4,7 +4,7 @@ import 'package:flame/components.dart';
 import 'package:flame/extensions.dart';
 import 'package:flame/rendering.dart';
 
-class KeyIndicator extends PositionComponent {
+class KeyIndicator extends PositionComponent with HasVisibility {
   final Image image;
   late final SpriteComponent _spriteComponent;
 

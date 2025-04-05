@@ -59,12 +59,14 @@ class GameWorld extends World with KeyboardHandler, HasGameRef<FishFaceGame> {
 
     for (final indicator in _indicators.values) {
       add(indicator);
+      indicator.isVisible = false;
     }
     add(_statusMessage..position = Vector2(0, 50));
     _updateStatusMessage();
   }
 
   void start() {
+    _showIndicators();
     _setState(
       _KeyReactiveState(
         requiredInput:
@@ -98,6 +100,7 @@ class GameWorld extends World with KeyboardHandler, HasGameRef<FishFaceGame> {
   }
 
   void _startNextRound() {
+    _showIndicators();
     _successes = 0;
     _misses = 0;
     _updateStatusMessage();
@@ -114,6 +117,18 @@ class GameWorld extends World with KeyboardHandler, HasGameRef<FishFaceGame> {
       _setState(_EndState());
     } else {
       _startNextRound();
+    }
+  }
+
+  void _hideIndicators() {
+    for (final indicator in _indicators.values) {
+      indicator.isVisible = false;
+    }
+  }
+
+  void _showIndicators() {
+    for (final indicator in _indicators.values) {
+      indicator.isVisible = true;
     }
   }
 }
@@ -208,6 +223,8 @@ class _CatchState extends _State with KeyboardHandler {
   @override
   FutureOr<void> onLoad() async {
     await super.onLoad();
+
+    game.world._hideIndicators();
 
     // Move the part into the middle of the screen as it's reeled in.
     _part =
