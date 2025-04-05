@@ -1,14 +1,14 @@
 import 'dart:async';
-import 'dart:math';
 
+import 'package:fish_face/face.dart';
+import 'package:fish_face/face_part.dart';
 import 'package:fish_face/game.dart';
 import 'package:fish_face/key_indicator.dart';
 import 'package:fish_face/pole.dart';
 import 'package:flame/components.dart';
+import 'package:flame/effects.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
-const tau = pi * 2;
 
 class GameWorld extends World with KeyboardHandler, HasGameRef<FishFaceGame> {
   static const lrKeyHeight = 450.0;
@@ -16,6 +16,7 @@ class GameWorld extends World with KeyboardHandler, HasGameRef<FishFaceGame> {
   var _successes = 0;
   var _misses = 0;
   _State? _state;
+  late final Face _face;
 
   final TextComponent _statusMessage = TextComponent();
 
@@ -32,12 +33,17 @@ class GameWorld extends World with KeyboardHandler, HasGameRef<FishFaceGame> {
   FutureOr<void> onLoad() async {
     await super.onLoad();
 
+    // Background
     add(
       RectangleComponent(
         size: game.size,
         paint: Paint()..color = Colors.blueGrey,
       ),
     );
+
+    // Game scene
+    _face = Face()..position = Vector2(100, 90);
+    add(_face);
     add(
       Pole()
         ..position = Vector2(-40, 500)
@@ -74,6 +80,26 @@ class GameWorld extends World with KeyboardHandler, HasGameRef<FishFaceGame> {
     _state = newState;
     add(newState);
   }
+
+  void _addToFace(FacePart part) {
+    final p = part.absolutePosition;
+    part.removeFromParent();
+    _face.add(part..position = p - _face.absolutePosition);
+    part.add(
+      MoveToEffect(
+        _face.center,
+        CurvedEffectController(1.0, Curves.easeIn),
+        onComplete: _startNextRound,
+      ),
+    );
+  }
+
+  void _startNextRound() {
+    _successes = 0;
+    _misses = 0;
+    _updateStatusMessage();
+    _setState(_IdleState());
+  }
 }
 
 sealed class _State extends Component
@@ -101,7 +127,7 @@ class _IdleState extends _State {
 }
 
 class _KeyReactiveState extends _State {
-  static const _defaultDuration = 1.0;
+  static const _defaultDuration = 3.0;
   final LogicalKeyboardKey requiredInput;
   late final Timer _timer;
 
@@ -132,7 +158,7 @@ class _KeyReactiveState extends _State {
     if (event is KeyDownEvent) {
       if (event.logicalKey == requiredInput) {
         if (requiredInput == LogicalKeyboardKey.arrowUp) {
-          game.world._setState(_WinState());
+          game.world._setState(_CatchState());
         } else {
           game.world._addSuccess();
           game.world._setState(_IdleState());
@@ -156,11 +182,47 @@ class _KeyReactiveState extends _State {
   }
 }
 
-class _WinState extends _State {
+class _CatchState extends _State with KeyboardHandler {
+  late final FacePart _part;
+  var _listeningForKeyEvent = false;
+
   @override
   FutureOr<void> onLoad() async {
     await super.onLoad();
-    add(TextComponent(text: 'Win!'));
+
+    _part =
+        FacePart()
+          ..position = Vector2(game.size.x / 2, game.size.y + 100)
+          ..add(
+            MoveToEffect(
+              game.size / 2,
+              CurvedEffectController(1.0, Curves.easeIn),
+              onComplete: () => _listeningForKeyEvent = true,
+            ),
+          );
+    add(_part);
+  }
+
+  @override
+  bool onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
+    if (_listeningForKeyEvent && event is KeyDownEvent) {
+      if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
+        _part.add(
+          SequenceEffect([
+            MoveToEffect(
+              Vector2(game.size.x + 100, _part.position.y),
+              CurvedEffectController(1.0, Curves.easeOut),
+            ),
+            RemoveEffect(),
+          ], onComplete: () => game.world._setState(_IdleState())),
+        );
+        return true;
+      } else if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+        _listeningForKeyEvent = false;
+        game.world._addToFace(_part);
+      }
+    }
+    return false;
   }
 }
 
