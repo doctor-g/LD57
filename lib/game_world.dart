@@ -1,17 +1,32 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:fish_face/game.dart';
+import 'package:fish_face/key_indicator.dart';
+import 'package:fish_face/pole.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+const tau = pi * 2;
+
 class GameWorld extends World with KeyboardHandler, HasGameRef<FishFaceGame> {
+  static const lrKeyHeight = 450.0;
+
   var _successes = 0;
   var _misses = 0;
   _State? _state;
 
-  final TextComponent _debugMessage = TextComponent(position: Vector2(0, 100));
   final TextComponent _statusMessage = TextComponent();
+
+  final _indicators = {
+    LogicalKeyboardKey.arrowLeft: KeyIndicator('LEFT')
+      ..position = Vector2(500, lrKeyHeight),
+    LogicalKeyboardKey.arrowRight: KeyIndicator('RIGHT')
+      ..position = Vector2(700, lrKeyHeight),
+    LogicalKeyboardKey.arrowUp: KeyIndicator('UP')
+      ..position = Vector2(600, 300),
+  };
 
   @override
   FutureOr<void> onLoad() async {
@@ -23,9 +38,17 @@ class GameWorld extends World with KeyboardHandler, HasGameRef<FishFaceGame> {
         paint: Paint()..color = Colors.blueGrey,
       ),
     );
+    add(
+      Pole()
+        ..position = Vector2(-40, 500)
+        ..angle = -12 * degrees2Radians,
+    );
 
-    add(_debugMessage);
-    add(_statusMessage);
+    for (final indicator in _indicators.values) {
+      add(indicator);
+    }
+    add(_statusMessage..position = Vector2(0, 50));
+
     _setState(_KeyReactiveState(requiredInput: LogicalKeyboardKey.arrowLeft));
     _updateStatusMessage();
   }
@@ -50,7 +73,6 @@ class GameWorld extends World with KeyboardHandler, HasGameRef<FishFaceGame> {
     }
     _state = newState;
     add(newState);
-    _debugMessage.text = newState.toString();
   }
 }
 
@@ -89,6 +111,12 @@ class _KeyReactiveState extends _State {
   FutureOr<void> onLoad() async {
     await super.onLoad();
     _timer = Timer(_defaultDuration);
+    game.world._indicators[requiredInput]!.makeActive();
+  }
+
+  @override
+  void onRemove() {
+    game.world._indicators[requiredInput]!.makeInactive();
   }
 
   @override
@@ -111,7 +139,11 @@ class _KeyReactiveState extends _State {
         }
       } else {
         game.world._addMiss();
-        game.world._setState(_IdleState());
+        if (game.world._misses > 3) {
+          game.world._setState(_LoseState());
+        } else {
+          game.world._setState(_IdleState());
+        }
       }
       return true;
     }
@@ -128,6 +160,14 @@ class _WinState extends _State {
   @override
   FutureOr<void> onLoad() async {
     await super.onLoad();
-    game.world._statusMessage.text = 'Win!';
+    add(TextComponent(text: 'Win!'));
+  }
+}
+
+class _LoseState extends _State {
+  @override
+  FutureOr<void> onLoad() async {
+    await super.onLoad();
+    add(TextComponent(text: 'Lose!'));
   }
 }
