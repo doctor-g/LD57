@@ -2,9 +2,10 @@ import 'dart:async';
 
 import 'package:fish_face/game.dart';
 import 'package:flame/components.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class GameWorld extends World with KeyboardHandler {
+class GameWorld extends World with KeyboardHandler, HasGameRef<FishFaceGame> {
   var _successes = 0;
   var _misses = 0;
   _State? _state;
@@ -15,6 +16,14 @@ class GameWorld extends World with KeyboardHandler {
   @override
   FutureOr<void> onLoad() async {
     await super.onLoad();
+
+    add(
+      RectangleComponent(
+        size: game.size,
+        paint: Paint()..color = Colors.blueGrey,
+      ),
+    );
+
     add(_debugMessage);
     add(_statusMessage);
     _setState(_KeyReactiveState(requiredInput: LogicalKeyboardKey.arrowLeft));

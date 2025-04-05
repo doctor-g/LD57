@@ -3,6 +3,7 @@ import 'package:flame/camera.dart';
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:flame/widgets.dart';
+import 'package:flutter/material.dart';
 
 class FishFaceGame extends FlameGame<GameWorld>
     with HasKeyboardHandlerComponents {
@@ -15,4 +16,7 @@ class FishFaceGame extends FlameGame<GameWorld>
           viewfinder: Viewfinder()..anchor = Anchor.topLeft,
         ),
       );
+
+  @override
+  Color backgroundColor() => Colors.black54;
 }
