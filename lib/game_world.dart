@@ -18,7 +18,6 @@ class GameWorld extends World with KeyboardHandler, HasGameRef<FishFaceGame> {
   static const lrKeyHeight = 450.0;
 
   var _successes = 0;
-  var _misses = 0;
   _State? _state;
   late final Face _face;
   late final Pole _pole;
@@ -85,13 +84,8 @@ class GameWorld extends World with KeyboardHandler, HasGameRef<FishFaceGame> {
     _updateStatusMessage();
   }
 
-  void _addMiss() {
-    _misses += 1;
-    _updateStatusMessage();
-  }
-
   void _updateStatusMessage() {
-    _statusMessage.text = 'Successes: $_successes.  Misses: $_misses';
+    _statusMessage.text = 'Successes: $_successes.';
   }
 
   void _setState(_State newState) {
@@ -105,7 +99,6 @@ class GameWorld extends World with KeyboardHandler, HasGameRef<FishFaceGame> {
   void _startNextRound() {
     _showIndicators();
     _successes = 0;
-    _misses = 0;
     _updateStatusMessage();
     _setState(_IdleState());
   }
@@ -201,12 +194,7 @@ class _KeyReactiveState extends _State {
           game.world._setState(_IdleState());
         }
       } else {
-        game.world._addMiss();
-        if (game.world._misses > 3) {
-          game.world._setState(_LoseState());
-        } else {
-          game.world._setState(_IdleState());
-        }
+        game.world._setState(_IdleState());
       }
       return true;
     }
@@ -316,14 +304,6 @@ class _CatchState extends _State with KeyboardHandler {
       _random.nextDouble() < 0.5
           ? FacePart(PartType.eye, Flame.images.fromCache('eye1.png'))
           : FacePart(PartType.mouth, Flame.images.fromCache('mouth1.png'));
-}
-
-class _LoseState extends _State {
-  @override
-  FutureOr<void> onLoad() async {
-    await super.onLoad();
-    add(TextComponent(text: 'Lose!'));
-  }
 }
 
 class _EndState extends _State with KeyboardHandler {
