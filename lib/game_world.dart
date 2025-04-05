@@ -57,7 +57,10 @@ class GameWorld extends World with KeyboardHandler, HasGameRef<FishFaceGame> {
       add(indicator);
     }
     add(_statusMessage..position = Vector2(0, 50));
+    _updateStatusMessage();
+  }
 
+  void start() {
     _setState(
       _KeyReactiveState(
         requiredInput:
@@ -66,7 +69,6 @@ class GameWorld extends World with KeyboardHandler, HasGameRef<FishFaceGame> {
                 : LogicalKeyboardKey.arrowRight,
       ),
     );
-    _updateStatusMessage();
   }
 
   void _addSuccess() {
