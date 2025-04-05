@@ -13,17 +13,23 @@ class KeyIndicator extends PositionComponent with HasVisibility {
   @override
   FutureOr<void> onLoad() async {
     await super.onLoad();
-    _spriteComponent = SpriteComponent(sprite: Sprite(image));
-    size = _spriteComponent.size;
-    makeInactive();
+
+    _spriteComponent = SpriteComponent(
+      sprite: Sprite(image),
+      size: image.size,
+      priority: 10,
+    );
+    size = image.size;
     add(_spriteComponent);
   }
 
-  void makeActive() {
-    _spriteComponent.decorator = PaintDecorator.tint(const Color(0xAAFFFF00));
+  void activate() {
+    _spriteComponent.decorator.addLast(
+      PaintDecorator.tint(const Color(0xAAFFFF00)),
+    );
   }
 
-  void makeInactive() {
-    _spriteComponent.decorator = Decorator();
+  void deactivate() {
+    _spriteComponent.decorator.removeLast();
   }
 }

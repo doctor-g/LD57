@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:fish_face/arrow_sprite_component.dart';
 import 'package:fish_face/face.dart';
 import 'package:fish_face/game.dart';
 import 'package:fish_face/key_indicator.dart';
@@ -12,7 +13,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 final _random = Random();
-final _lowPoleAngle = -12 * degrees2Radians;
+const _lowPoleAngle = -12 * degrees2Radians;
+const _debugKey = LogicalKeyboardKey.keyZ;
 
 class GameWorld extends World with KeyboardHandler, HasGameRef<FishFaceGame> {
   static const lrKeyHeight = 450.0;
@@ -70,11 +72,10 @@ class GameWorld extends World with KeyboardHandler, HasGameRef<FishFaceGame> {
   void start() {
     _showIndicators();
     _setState(
-      _KeyReactiveState(
-        requiredInput:
-            _random.nextDouble() < 0.5
-                ? LogicalKeyboardKey.arrowLeft
-                : LogicalKeyboardKey.arrowRight,
+      _PreparatoryState(
+        _random.nextDouble() < 0.5
+            ? LogicalKeyboardKey.arrowLeft
+            : LogicalKeyboardKey.arrowRight,
       ),
     );
   }
@@ -148,8 +149,79 @@ class _IdleState extends _State {
               ? LogicalKeyboardKey.arrowLeft
               : LogicalKeyboardKey.arrowUp;
 
-      game.world._setState(_KeyReactiveState(requiredInput: nextInput));
+      game.world._setState(_PreparatoryState(nextInput));
     }
+  }
+}
+
+/// Preparing for it to be the right time to press a key by showing
+/// an animation on the relevant key.
+class _PreparatoryState extends _State with KeyboardHandler {
+  static const _activationEffectDuration = 0.75;
+
+  final LogicalKeyboardKey _desiredKey;
+  late final ArrowSpriteComponent _attractor;
+
+  _PreparatoryState(this._desiredKey);
+
+  @override
+  FutureOr<void> onLoad() async {
+    await super.onLoad();
+
+    final slot = game.world._indicators[_desiredKey]!;
+
+    _attractor =
+        ArrowSpriteComponent(switch (_desiredKey) {
+            LogicalKeyboardKey.arrowUp => ArrowSpriteType.up,
+            LogicalKeyboardKey.arrowLeft => ArrowSpriteType.left,
+            LogicalKeyboardKey.arrowRight => ArrowSpriteType.right,
+            LogicalKeyboardKey() => throw UnimplementedError(),
+          })
+          ..scale = Vector2.all(3.0)
+          ..opacity = 0.0
+          ..add(
+            OpacityEffect.to(
+              1.0,
+              CurvedEffectController(_activationEffectDuration, Curves.easeIn),
+            ),
+          )
+          ..add(
+            ScaleEffect.to(
+              Vector2.all(1.0),
+              CurvedEffectController(_activationEffectDuration, Curves.easeOut),
+              onComplete: () {
+                _attractor.removeFromParent();
+                game.world._setState(
+                  _KeyReactiveState(requiredInput: _desiredKey),
+                );
+              },
+            ),
+          );
+    slot.add(_attractor..position = slot.size / 2);
+  }
+
+  @override
+  void onRemove() {
+    if (_attractor.parent != null) {
+      _attractor.removeFromParent();
+    }
+  }
+
+  @override
+  bool onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
+    // Pressing a key in this state means failure unless it's the automatic
+    // success key.
+    if (event is KeyDownEvent) {
+      if (event.logicalKey == _debugKey) {
+        game.world._setState(_CatchState());
+        return true;
+      } else {
+        print('Failure sound here');
+        game.world._setState(_IdleState());
+        return true;
+      }
+    }
+    return false;
   }
 }
 
@@ -164,12 +236,12 @@ class _KeyReactiveState extends _State {
   FutureOr<void> onLoad() async {
     await super.onLoad();
     _timer = Timer(_defaultDuration);
-    game.world._indicators[requiredInput]!.makeActive();
+    game.world._indicators[requiredInput]!.activate();
   }
 
   @override
   void onRemove() {
-    game.world._indicators[requiredInput]!.makeInactive();
+    game.world._indicators[requiredInput]!.deactivate();
   }
 
   @override
@@ -183,17 +255,20 @@ class _KeyReactiveState extends _State {
   @override
   bool onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
     if (event is KeyDownEvent) {
-      // Check the debugging key
       if (event.logicalKey == LogicalKeyboardKey.keyZ) {
         game.world._setState(_CatchState());
       } else if (event.logicalKey == requiredInput) {
+        // If we're pulling up, we're catching something
         if (requiredInput == LogicalKeyboardKey.arrowUp) {
           game.world._setState(_CatchState());
-        } else {
+        }
+        // Otherwise it's just a step along the way
+        else {
           game.world._addSuccess();
           game.world._setState(_IdleState());
         }
       } else {
+        print('Failed to hit the right key');
         game.world._setState(_IdleState());
       }
       return true;
@@ -216,8 +291,10 @@ class _CatchState extends _State with KeyboardHandler {
 
   late final FacePart _part;
   var _listeningForKeyEvent = false;
-  late final KeyIndicator _left;
-  late final KeyIndicator _right;
+  final ArrowSpriteComponent _left = ArrowSpriteComponent(ArrowSpriteType.left);
+  final ArrowSpriteComponent _right = ArrowSpriteComponent(
+    ArrowSpriteType.right,
+  );
 
   @override
   FutureOr<void> onLoad() async {
@@ -226,16 +303,14 @@ class _CatchState extends _State with KeyboardHandler {
     game.world._hideIndicators();
 
     add(
-      _left =
-          KeyIndicator(Flame.images.fromCache('left.png'))
-            ..position = Vector2(_partX - _arrowDistanceFromPart, _partY)
-            ..isVisible = false,
+      _left
+        ..position = Vector2(_partX - _arrowDistanceFromPart, _partY)
+        ..isVisible = false,
     );
     add(
-      _right =
-          KeyIndicator(Flame.images.fromCache('right.png'))
-            ..position = Vector2(_partX + _arrowDistanceFromPart, _partY)
-            ..isVisible = false,
+      _right
+        ..position = Vector2(_partX + _arrowDistanceFromPart, _partY)
+        ..isVisible = false,
     );
 
     // Move the part into the middle of the screen as it's reeled in.
