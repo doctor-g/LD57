@@ -1,14 +1,17 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:fish_face/face.dart';
-import 'package:fish_face/face_part.dart';
 import 'package:fish_face/game.dart';
 import 'package:fish_face/key_indicator.dart';
 import 'package:fish_face/pole.dart';
 import 'package:flame/components.dart';
 import 'package:flame/effects.dart';
+import 'package:flame/flame.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
+final _random = Random();
 
 class GameWorld extends World with KeyboardHandler, HasGameRef<FishFaceGame> {
   static const lrKeyHeight = 450.0;
@@ -81,19 +84,6 @@ class GameWorld extends World with KeyboardHandler, HasGameRef<FishFaceGame> {
     add(newState);
   }
 
-  void _addToFace(FacePart part) {
-    final p = part.absolutePosition;
-    part.removeFromParent();
-    _face.add(part..position = p - _face.absolutePosition);
-    part.add(
-      MoveToEffect(
-        _face.center,
-        CurvedEffectController(1.0, Curves.easeIn),
-        onComplete: _startNextRound,
-      ),
-    );
-  }
-
   void _startNextRound() {
     _successes = 0;
     _misses = 0;
@@ -156,7 +146,10 @@ class _KeyReactiveState extends _State {
   @override
   bool onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
     if (event is KeyDownEvent) {
-      if (event.logicalKey == requiredInput) {
+      // Check the debugging key
+      if (event.logicalKey == LogicalKeyboardKey.keyZ) {
+        game.world._setState(_CatchState());
+      } else if (event.logicalKey == requiredInput) {
         if (requiredInput == LogicalKeyboardKey.arrowUp) {
           game.world._setState(_CatchState());
         } else {
@@ -190,8 +183,9 @@ class _CatchState extends _State with KeyboardHandler {
   FutureOr<void> onLoad() async {
     await super.onLoad();
 
+    // Move the part into the middle of the screen as it's reeled in.
     _part =
-        FacePart()
+        _randomFacePart()
           ..position = Vector2(game.size.x / 2, game.size.y + 100)
           ..add(
             MoveToEffect(
@@ -207,6 +201,7 @@ class _CatchState extends _State with KeyboardHandler {
   bool onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
     if (_listeningForKeyEvent && event is KeyDownEvent) {
       if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
+        // Throw the part away
         _part.add(
           SequenceEffect([
             MoveToEffect(
@@ -214,16 +209,23 @@ class _CatchState extends _State with KeyboardHandler {
               CurvedEffectController(1.0, Curves.easeOut),
             ),
             RemoveEffect(),
-          ], onComplete: () => game.world._setState(_IdleState())),
+          ], onComplete: game.world._startNextRound),
         );
         return true;
       } else if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
         _listeningForKeyEvent = false;
-        game.world._addToFace(_part);
+        game.world._face
+            .addPart(_part)
+            .then((_) => game.world._startNextRound());
       }
     }
     return false;
   }
+
+  FacePart _randomFacePart() =>
+      _random.nextDouble() < 0.5
+          ? FacePart(PartType.eye, Flame.images.fromCache('eye1.png'))
+          : FacePart(PartType.mouth, Flame.images.fromCache('mouth1.png'));
 }
 
 class _LoseState extends _State {
