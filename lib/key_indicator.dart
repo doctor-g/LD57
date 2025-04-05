@@ -8,12 +8,13 @@ class KeyIndicator extends PositionComponent with HasVisibility {
   final Image image;
   late final SpriteComponent _spriteComponent;
 
-  KeyIndicator(this.image);
+  KeyIndicator(this.image) : super(anchor: Anchor.center);
 
   @override
   FutureOr<void> onLoad() async {
     await super.onLoad();
     _spriteComponent = SpriteComponent(sprite: Sprite(image));
+    size = _spriteComponent.size;
     makeInactive();
     add(_spriteComponent);
   }

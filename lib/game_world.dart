@@ -224,15 +224,31 @@ class _CatchState extends _State with KeyboardHandler {
   static const _raiseAmount = -30.0 * degrees2Radians;
   static const _partX = 500.0;
   static const _partY = 300.0;
+  static const _arrowDistanceFromPart = 120.0;
 
   late final FacePart _part;
   var _listeningForKeyEvent = false;
+  late final KeyIndicator _left;
+  late final KeyIndicator _right;
 
   @override
   FutureOr<void> onLoad() async {
     await super.onLoad();
 
     game.world._hideIndicators();
+
+    add(
+      _left =
+          KeyIndicator(Flame.images.fromCache('left.png'))
+            ..position = Vector2(_partX - _arrowDistanceFromPart, _partY)
+            ..isVisible = false,
+    );
+    add(
+      _right =
+          KeyIndicator(Flame.images.fromCache('right.png'))
+            ..position = Vector2(_partX + _arrowDistanceFromPart, _partY)
+            ..isVisible = false,
+    );
 
     // Move the part into the middle of the screen as it's reeled in.
     _part =
@@ -242,7 +258,11 @@ class _CatchState extends _State with KeyboardHandler {
             MoveToEffect(
               Vector2(_partX, _partY),
               CurvedEffectController(_raiseDuration, Curves.easeIn),
-              onComplete: () => _listeningForKeyEvent = true,
+              onComplete: () {
+                _listeningForKeyEvent = true;
+                _left.isVisible = true;
+                _right.isVisible = true;
+              },
             ),
           );
     add(_part);
@@ -268,6 +288,10 @@ class _CatchState extends _State with KeyboardHandler {
   @override
   bool onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
     if (_listeningForKeyEvent && event is KeyDownEvent) {
+      for (final arrow in [_left, _right]) {
+        arrow.isVisible = false;
+      }
+
       if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
         // Throw the part away
         _part.add(
