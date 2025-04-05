@@ -60,6 +60,12 @@ class Face extends PositionComponent with HasGameRef<FishFaceGame> {
     return _addPartToSlot(part, slot);
   }
 
+  bool get isFull => [
+    leftEyeSlot,
+    rightEyeSlot,
+    mouthSlot,
+  ].every((component) => component.children.isNotEmpty);
+
   Future _addPartToSlot(FacePart part, PositionComponent slot) {
     final completer = Completer();
     final globalPosition = part.absolutePosition;
@@ -81,7 +87,8 @@ class Face extends PositionComponent with HasGameRef<FishFaceGame> {
     return completer.future;
   }
 
-  void _discardChildFrom(PositionComponent slot) {
+  Future _discardChildFrom(PositionComponent slot) {
+    final completer = Completer();
     slot.children.first.add(
       SequenceEffect([
         MoveToEffect(
@@ -89,8 +96,22 @@ class Face extends PositionComponent with HasGameRef<FishFaceGame> {
           CurvedEffectController(1.0, Curves.easeOut),
         ),
         RemoveEffect(),
-      ]),
+      ], onComplete: completer.complete),
     );
+    return completer.future;
+  }
+
+  Future reset() async {
+    final futures = <Future>[];
+    for (final slot in [
+      leftEyeSlot,
+      rightEyeSlot,
+      mouthSlot,
+    ].where((element) => element.children.isNotEmpty)) {
+      final future = _discardChildFrom(slot);
+      futures.add(future);
+    }
+    await Future.wait(futures);
   }
 }
 

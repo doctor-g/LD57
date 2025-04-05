@@ -58,7 +58,14 @@ class GameWorld extends World with KeyboardHandler, HasGameRef<FishFaceGame> {
     }
     add(_statusMessage..position = Vector2(0, 50));
 
-    _setState(_KeyReactiveState(requiredInput: LogicalKeyboardKey.arrowLeft));
+    _setState(
+      _KeyReactiveState(
+        requiredInput:
+            _random.nextDouble() < 0.5
+                ? LogicalKeyboardKey.arrowLeft
+                : LogicalKeyboardKey.arrowRight,
+      ),
+    );
     _updateStatusMessage();
   }
 
@@ -89,6 +96,19 @@ class GameWorld extends World with KeyboardHandler, HasGameRef<FishFaceGame> {
     _misses = 0;
     _updateStatusMessage();
     _setState(_IdleState());
+  }
+
+  Future _reset() async {
+    await _face.reset();
+    _startNextRound();
+  }
+
+  void _finishRound() {
+    if (_face.isFull) {
+      _setState(_EndState());
+    } else {
+      _startNextRound();
+    }
   }
 }
 
@@ -214,9 +234,7 @@ class _CatchState extends _State with KeyboardHandler {
         return true;
       } else if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
         _listeningForKeyEvent = false;
-        game.world._face
-            .addPart(_part)
-            .then((_) => game.world._startNextRound());
+        game.world._face.addPart(_part).then((_) => game.world._finishRound());
       }
     }
     return false;
@@ -233,5 +251,28 @@ class _LoseState extends _State {
   FutureOr<void> onLoad() async {
     await super.onLoad();
     add(TextComponent(text: 'Lose!'));
+  }
+}
+
+class _EndState extends _State with KeyboardHandler {
+  var _listeningForKeys = true;
+
+  @override
+  FutureOr<void> onLoad() async {
+    await super.onLoad();
+    add(TextComponent(text: 'Your face is full! Press up to reset.'));
+  }
+
+  @override
+  bool onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
+    if (_listeningForKeys &&
+        event is KeyDownEvent &&
+        event.logicalKey == LogicalKeyboardKey.arrowUp) {
+      _listeningForKeys = false;
+      game.world._reset();
+      return true;
+    } else {
+      return false;
+    }
   }
 }
