@@ -222,6 +222,8 @@ class _KeyReactiveState extends _State {
 class _CatchState extends _State with KeyboardHandler {
   static const _raiseDuration = 0.5;
   static const _raiseAmount = -30.0 * degrees2Radians;
+  static const _partX = 500.0;
+  static const _partY = 300.0;
 
   late final FacePart _part;
   var _listeningForKeyEvent = false;
@@ -238,8 +240,8 @@ class _CatchState extends _State with KeyboardHandler {
           ..position = Vector2(game.size.x / 2, game.size.y + 100)
           ..add(
             MoveToEffect(
-              game.size / 2,
-              CurvedEffectController(1.0, Curves.easeIn),
+              Vector2(_partX, _partY),
+              CurvedEffectController(_raiseDuration, Curves.easeIn),
               onComplete: () => _listeningForKeyEvent = true,
             ),
           );
