@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flame/components.dart';
 import 'package:flame/extensions.dart';
-import 'package:flame/rendering.dart';
 
 class KeyIndicator extends PositionComponent with HasVisibility {
   final Image image;
@@ -21,15 +20,5 @@ class KeyIndicator extends PositionComponent with HasVisibility {
     );
     size = image.size;
     add(_spriteComponent);
-  }
-
-  void activate() {
-    _spriteComponent.decorator.addLast(
-      PaintDecorator.tint(const Color(0xAAFFFF00)),
-    );
-  }
-
-  void deactivate() {
-    _spriteComponent.decorator.removeLast();
   }
 }

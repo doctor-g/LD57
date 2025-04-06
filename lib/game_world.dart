@@ -9,6 +9,7 @@ import 'package:fish_face/pole.dart';
 import 'package:flame/components.dart';
 import 'package:flame/effects.dart';
 import 'package:flame/flame.dart';
+import 'package:flame/rendering.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -238,12 +239,15 @@ class _KeyReactiveState extends _State {
   FutureOr<void> onLoad() async {
     await super.onLoad();
     _timer = Timer(_defaultDuration);
-    game.world._indicators[requiredInput]!.activate();
+    // game.world._indicators[requiredInput]!.activate();
+    game.world._indicators[requiredInput]!.decorator.addLast(
+      PaintDecorator.tint(Color(0xAAFFFF00)),
+    );
   }
 
   @override
   void onRemove() {
-    game.world._indicators[requiredInput]!.deactivate();
+    game.world._indicators[requiredInput]!.decorator.removeLast();
   }
 
   @override
