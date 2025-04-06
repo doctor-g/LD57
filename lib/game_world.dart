@@ -142,7 +142,7 @@ sealed class _State extends Component
         Vector2(50, 0),
         NoiseEffectController(
           duration: 1.0,
-          noise: PerlinFractalNoise(frequency: 400),
+          noise: PerlinNoise(frequency: 400),
         ),
       ),
     );

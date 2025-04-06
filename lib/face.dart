@@ -32,9 +32,14 @@ class Face extends PositionComponent with HasGameRef<FishFaceGame> {
 
   @override
   void render(Canvas canvas) {
+    final rect = Rect.fromLTRB(0, 0, size.x, size.y);
+    canvas.drawOval(rect, Paint()..color = Colors.yellow);
     canvas.drawOval(
-      Rect.fromLTRB(0, 0, size.x, size.y),
-      Paint()..color = Colors.yellow,
+      rect,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..color = Colors.black
+        ..strokeWidth = 10.0,
     );
   }
 
