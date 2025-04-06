@@ -269,7 +269,7 @@ class _PreparatoryState extends _State with KeyboardHandler {
 }
 
 class _KeyReactiveState extends _State {
-  static const _defaultDuration = 3.0;
+  static const _defaultDuration = 0.4;
   final LogicalKeyboardKey requiredInput;
   late final Timer _timer;
 
