@@ -196,7 +196,7 @@ class _IdleState extends _State {
     if (timer.finished) {
       final nextInput =
           game.world._successes < 3
-              ? LogicalKeyboardKey.arrowLeft
+              ? game.world._nextRandomInput()
               : LogicalKeyboardKey.arrowUp;
 
       game.world._setState(_PreparatoryState(nextInput));
