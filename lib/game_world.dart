@@ -28,8 +28,6 @@ class GameWorld extends World with KeyboardHandler, HasGameRef<FishFaceGame> {
   late final Face _face;
   late final Pole _pole;
 
-  final TextComponent _statusMessage = TextComponent();
-
   final _indicators = <LogicalKeyboardKey, KeyIndicator>{};
 
   @override
@@ -69,8 +67,6 @@ class GameWorld extends World with KeyboardHandler, HasGameRef<FishFaceGame> {
       add(indicator);
       indicator.isVisible = false;
     }
-    add(_statusMessage..position = Vector2(0, 50));
-    _updateStatusMessage();
   }
 
   void start() {
@@ -86,11 +82,6 @@ class GameWorld extends World with KeyboardHandler, HasGameRef<FishFaceGame> {
 
   void _addSuccess() {
     _successes += 1;
-    _updateStatusMessage();
-  }
-
-  void _updateStatusMessage() {
-    _statusMessage.text = 'Successes: $_successes.';
   }
 
   void _setState(_State newState) {
@@ -104,7 +95,6 @@ class GameWorld extends World with KeyboardHandler, HasGameRef<FishFaceGame> {
   void _startNextRound() {
     _showIndicators();
     _successes = 0;
-    _updateStatusMessage();
     _setState(_IdleState());
   }
 
