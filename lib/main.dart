@@ -1,17 +1,27 @@
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import 'game.dart';
 
 const _titleId = 'title';
 
 void main() {
+  // Only use the packaged fonts.
+  GoogleFonts.config.allowRuntimeFetching = false;
+
   final game = FishFaceGame();
   runApp(
-    GameWidget(
-      game: game,
-      overlayBuilderMap: {_titleId: (_, _) => TitleOverlay(game: game)},
-      initialActiveOverlays: [_titleId],
+    // The MaterialApp and Scaffold are needed for showAboutDialog.
+    // Otherwise, this could just have the game widget.
+    MaterialApp(
+      home: Scaffold(
+        body: GameWidget(
+          game: game,
+          overlayBuilderMap: {_titleId: (_, _) => TitleOverlay(game: game)},
+          initialActiveOverlays: [_titleId],
+        ),
+      ),
     ),
   );
 }
@@ -24,7 +34,42 @@ class TitleOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: ElevatedButton(onPressed: _startGame, child: const Text('Play')),
+      child: Container(
+        color: Colors.blue,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Fish Face',
+              style: GoogleFonts.oi(textStyle: TextStyle(fontSize: 80)),
+            ),
+            Text(
+              'A ridiculous game by Paul Gestwicki\nMade for Ludum Dare 57',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.alatsi(textStyle: TextStyle(fontSize: 18)),
+            ),
+            ElevatedButton(
+              onPressed: _startGame,
+              child: Text(
+                'Play',
+                style: GoogleFonts.alatsi(textStyle: TextStyle(fontSize: 32)),
+              ),
+            ),
+            ElevatedButton(
+              onPressed:
+                  () => showAboutDialog(
+                    context: context,
+                    applicationName: 'Fish Face',
+                    applicationLegalese: '©2025 Paul Gestwicki',
+                  ),
+              child: Text(
+                'About',
+                style: GoogleFonts.alatsi(textStyle: TextStyle(fontSize: 18)),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
