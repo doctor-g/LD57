@@ -17,4 +17,14 @@ class ArrowSpriteComponent extends SpriteComponent with HasVisibility {
         ),
         anchor: Anchor.center,
       );
+
+  set highlight(bool highlighted) {
+    final String suffix = highlighted ? '_highlight' : '';
+    final assetName = switch (type) {
+      ArrowSpriteType.left => 'left$suffix.png',
+      ArrowSpriteType.right => 'right$suffix.png',
+      ArrowSpriteType.up => 'up$suffix.png',
+    };
+    sprite = Sprite(Flame.images.fromCache(assetName));
+  }
 }

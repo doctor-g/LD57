@@ -4,12 +4,10 @@ import 'dart:math';
 import 'package:fish_face/arrow_sprite_component.dart';
 import 'package:fish_face/face.dart';
 import 'package:fish_face/game.dart';
-import 'package:fish_face/key_indicator.dart';
 import 'package:fish_face/pole.dart';
 import 'package:flame/components.dart';
 import 'package:flame/effects.dart';
 import 'package:flame/flame.dart';
-import 'package:flame/rendering.dart';
 import 'package:flame_noise/flame_noise.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -28,20 +26,18 @@ class GameWorld extends World with KeyboardHandler, HasGameRef<FishFaceGame> {
   late final Face _face;
   late final Pole _pole;
 
-  final _indicators = <LogicalKeyboardKey, KeyIndicator>{};
+  final _indicators = <LogicalKeyboardKey, ArrowSpriteComponent>{};
 
   @override
   FutureOr<void> onLoad() async {
     await super.onLoad();
 
     _indicators.addAll({
-      LogicalKeyboardKey.arrowLeft: KeyIndicator(
-        Flame.images.fromCache('left.png'),
-      )..position = Vector2(500, lrKeyHeight),
-      LogicalKeyboardKey.arrowRight: KeyIndicator(
-        Flame.images.fromCache('right.png'),
-      )..position = Vector2(700, lrKeyHeight),
-      LogicalKeyboardKey.arrowUp: KeyIndicator(Flame.images.fromCache('up.png'))
+      LogicalKeyboardKey.arrowLeft: ArrowSpriteComponent(ArrowSpriteType.left)
+        ..position = Vector2(500, lrKeyHeight),
+      LogicalKeyboardKey.arrowRight: ArrowSpriteComponent(ArrowSpriteType.right)
+        ..position = Vector2(700, lrKeyHeight),
+      LogicalKeyboardKey.arrowUp: ArrowSpriteComponent(ArrowSpriteType.up)
         ..position = Vector2(600, 300),
     });
 
@@ -242,15 +238,12 @@ class _KeyReactiveState extends _State {
   FutureOr<void> onLoad() async {
     await super.onLoad();
     _timer = Timer(_defaultDuration);
-    // game.world._indicators[requiredInput]!.activate();
-    game.world._indicators[requiredInput]!.decorator.addLast(
-      PaintDecorator.tint(Color(0xAAFFFF00)),
-    );
+    game.world._indicators[requiredInput]!.highlight = true;
   }
 
   @override
   void onRemove() {
-    game.world._indicators[requiredInput]!.decorator.removeLast();
+    game.world._indicators[requiredInput]!.highlight = false;
   }
 
   @override
@@ -305,10 +298,11 @@ class _CatchState extends _State with KeyboardHandler {
 
   late final FacePart _part;
   var _listeningForKeyEvent = false;
-  final ArrowSpriteComponent _left = ArrowSpriteComponent(ArrowSpriteType.left);
+  final ArrowSpriteComponent _left = ArrowSpriteComponent(ArrowSpriteType.left)
+    ..highlight = true;
   final ArrowSpriteComponent _right = ArrowSpriteComponent(
     ArrowSpriteType.right,
-  );
+  )..highlight = true;
 
   @override
   FutureOr<void> onLoad() async {
