@@ -11,7 +11,6 @@ dependencies:
     sdk: flutter
   flame: ^1.27.0
   flame_audio: ^2.11.3
-  google_fonts: ^6.2.1
 
 dev_dependencies:
   flutter_test:
@@ -20,7 +19,14 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  fonts:
+    - family: Oi
+      fonts:
+        - asset: assets/fonts/Oi-Regular.ttf
+    - family: Alatsi
+      fonts:
+        - asset: assets/fonts/Alatsi-Regular.ttf
   assets:
     - assets/audio/
-    - assets/google_fonts/
+    - assets/fonts/
     - assets/images/

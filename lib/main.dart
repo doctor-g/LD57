@@ -1,20 +1,17 @@
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'game.dart';
 
 const _titleId = 'title';
 
 void main() {
-  // Only use the packaged fonts.
-  GoogleFonts.config.allowRuntimeFetching = false;
-
   final game = FishFaceGame();
   runApp(
     // The MaterialApp and Scaffold are needed for showAboutDialog.
     // Otherwise, this could just have the game widget.
     MaterialApp(
+      theme: ThemeData(fontFamily: 'Alatsi'),
       home: Scaffold(
         body: GameWidget(
           game: game,
@@ -39,21 +36,15 @@ class TitleOverlay extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              'Fish Face',
-              style: GoogleFonts.oi(textStyle: TextStyle(fontSize: 80)),
-            ),
+            Text('Fish Face', style: TextStyle(fontFamily: 'Oi', fontSize: 80)),
             Text(
               'A ridiculous game by Paul Gestwicki\nMade for Ludum Dare 57',
               textAlign: TextAlign.center,
-              style: GoogleFonts.alatsi(textStyle: TextStyle(fontSize: 18)),
+              style: TextStyle(fontSize: 18),
             ),
             ElevatedButton(
               onPressed: _startGame,
-              child: Text(
-                'Play',
-                style: GoogleFonts.alatsi(textStyle: TextStyle(fontSize: 32)),
-              ),
+              child: Text('Play', style: TextStyle(fontSize: 32)),
             ),
             ElevatedButton(
               onPressed:
@@ -62,10 +53,7 @@ class TitleOverlay extends StatelessWidget {
                     applicationName: 'Fish Face',
                     applicationLegalese: '©2025 Paul Gestwicki',
                   ),
-              child: Text(
-                'About',
-                style: GoogleFonts.alatsi(textStyle: TextStyle(fontSize: 18)),
-              ),
+              child: Text('About', style: TextStyle(fontSize: 18)),
             ),
           ],
         ),
