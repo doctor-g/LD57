@@ -113,6 +113,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.3.2"
+  fast_noise:
+    dependency: transitive
+    description:
+      name: fast_noise
+      sha256: "2aa7bbde5599d2b6769750ee23536ec8a0096606fc9d10d29a3855e80715e1c6"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.0"
   ffi:
     dependency: transitive
     description:
@@ -153,6 +161,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.11.3"
+  flame_noise:
+    dependency: "direct main"
+    description:
+      name: flame_noise
+      sha256: baca92be7368e3ae081838b23d56569aed430b85c978b0bbbf2dc0441d6b0b15
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.3.2+9"
   flutter:
     dependency: "direct main"
     description: flutter

@@ -10,6 +10,7 @@ import 'package:flame/components.dart';
 import 'package:flame/effects.dart';
 import 'package:flame/flame.dart';
 import 'package:flame/rendering.dart';
+import 'package:flame_noise/flame_noise.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -134,7 +135,19 @@ class GameWorld extends World with KeyboardHandler, HasGameRef<FishFaceGame> {
 }
 
 sealed class _State extends Component
-    with KeyboardHandler, HasGameRef<FishFaceGame> {}
+    with KeyboardHandler, HasGameRef<FishFaceGame> {
+  void _playNoEffect() {
+    game.world._face.add(
+      MoveEffect.by(
+        Vector2(50, 0),
+        NoiseEffectController(
+          duration: 1.0,
+          noise: PerlinFractalNoise(frequency: 400),
+        ),
+      ),
+    );
+  }
+}
 
 class _IdleState extends _State {
   late final Timer timer;
@@ -219,7 +232,7 @@ class _PreparatoryState extends _State with KeyboardHandler {
         game.world._setState(_CatchState());
         return true;
       } else {
-        print('Failure sound here');
+        _playNoEffect();
         game.world._setState(_IdleState());
         return true;
       }
@@ -270,11 +283,12 @@ class _KeyReactiveState extends _State {
         }
         // Otherwise it's just a step along the way
         else {
+          _playYesEffect();
           game.world._addSuccess();
           game.world._setState(_IdleState());
         }
       } else {
-        print('Failed to hit the right key');
+        _playNoEffect();
         game.world._setState(_IdleState());
       }
       return true;
@@ -282,9 +296,13 @@ class _KeyReactiveState extends _State {
     return false;
   }
 
-  @override
-  String toString() {
-    return '${runtimeType.toString()}(${requiredInput.keyLabel})';
+  void _playYesEffect() {
+    game.world._face.add(
+      MoveByEffect(
+        Vector2(0, 15),
+        SineEffectController(period: 2.0)..duration = 0.5,
+      ),
+    );
   }
 }
 
