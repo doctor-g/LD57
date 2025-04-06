@@ -15,6 +15,8 @@ import 'package:flutter/services.dart';
 final _random = Random();
 const _lowPoleAngle = -12 * degrees2Radians;
 const _debugKey = LogicalKeyboardKey.keyZ;
+const _numberOfMouths = 4;
+const _numberOfEyes = 4;
 
 class GameWorld extends World with KeyboardHandler, HasGameRef<FishFaceGame> {
   static const lrKeyHeight = 450.0;
@@ -375,10 +377,21 @@ class _CatchState extends _State with KeyboardHandler {
     return false;
   }
 
-  FacePart _randomFacePart() =>
-      _random.nextDouble() < 0.5
-          ? FacePart(PartType.eye, Flame.images.fromCache('eye1.png'))
-          : FacePart(PartType.mouth, Flame.images.fromCache('mouth1.png'));
+  FacePart _randomFacePart() {
+    final _successor = (index) => index + 1;
+    if (_random.nextDouble() < 0.5) {
+      // It would be nice to dynamically figure out how many pieces were loaded,
+      // but it's a game jam.
+      final int index = List.generate(_numberOfEyes, _successor).pickRandom();
+      return FacePart(PartType.eye, Flame.images.fromCache('eye$index.png'));
+    } else {
+      final int index = List.generate(_numberOfMouths, _successor).pickRandom();
+      return FacePart(
+        PartType.mouth,
+        Flame.images.fromCache('mouth$index.png'),
+      );
+    }
+  }
 }
 
 class _EndState extends _State with KeyboardHandler {
@@ -402,4 +415,8 @@ class _EndState extends _State with KeyboardHandler {
       return false;
     }
   }
+}
+
+extension<T> on List<T> {
+  T pickRandom() => this[_random.nextInt(length)];
 }
