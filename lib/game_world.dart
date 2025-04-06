@@ -378,14 +378,13 @@ class _CatchState extends _State with KeyboardHandler {
   }
 
   FacePart _randomFacePart() {
-    final _successor = (index) => index + 1;
     if (_random.nextDouble() < 0.5) {
       // It would be nice to dynamically figure out how many pieces were loaded,
       // but it's a game jam.
-      final int index = List.generate(_numberOfEyes, _successor).pickRandom();
+      final int index = _random.nextInt(_numberOfEyes) + 1;
       return FacePart(PartType.eye, Flame.images.fromCache('eye$index.png'));
     } else {
-      final int index = List.generate(_numberOfMouths, _successor).pickRandom();
+      final int index = _random.nextInt(_numberOfMouths) + 1;
       return FacePart(
         PartType.mouth,
         Flame.images.fromCache('mouth$index.png'),
@@ -415,8 +414,4 @@ class _EndState extends _State with KeyboardHandler {
       return false;
     }
   }
-}
-
-extension<T> on List<T> {
-  T pickRandom() => this[_random.nextInt(length)];
 }
