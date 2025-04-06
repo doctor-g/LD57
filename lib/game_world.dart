@@ -177,9 +177,16 @@ sealed class _State extends Component
 }
 
 class _IdleState extends _State {
+  static const _baseDuration = 2.0;
+  static const _durationVariation = 1.0;
   late final Timer timer;
 
-  _IdleState({double duration = 1.0}) {
+  _IdleState() {
+    final variationWidth = _durationVariation * 2.0;
+    final duration =
+        _baseDuration -
+        _durationVariation +
+        _random.nextDouble() * variationWidth;
     timer = Timer(duration);
   }
 
@@ -291,7 +298,7 @@ class _KeyReactiveState extends _State {
   void update(double dt) {
     _timer.update(dt);
     if (_timer.finished) {
-      game.world._setState(_IdleState(duration: 2));
+      game.world._setState(_IdleState());
     }
   }
 
