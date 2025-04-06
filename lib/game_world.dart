@@ -28,6 +28,9 @@ class GameWorld extends World with KeyboardHandler, HasGameRef<FishFaceGame> {
 
   final _indicators = <LogicalKeyboardKey, ArrowSpriteComponent>{};
 
+  final _inputBag = <LogicalKeyboardKey>[];
+  final _partTypeBag = <PartType>[];
+
   @override
   FutureOr<void> onLoad() async {
     await super.onLoad();
@@ -67,13 +70,7 @@ class GameWorld extends World with KeyboardHandler, HasGameRef<FishFaceGame> {
 
   void start() {
     _showIndicators();
-    _setState(
-      _PreparatoryState(
-        _random.nextDouble() < 0.5
-            ? LogicalKeyboardKey.arrowLeft
-            : LogicalKeyboardKey.arrowRight,
-      ),
-    );
+    _setState(_PreparatoryState(game.world._nextRandomInput()));
   }
 
   void _addSuccess() {
@@ -116,6 +113,50 @@ class GameWorld extends World with KeyboardHandler, HasGameRef<FishFaceGame> {
   void _showIndicators() {
     for (final indicator in _indicators.values) {
       indicator.isVisible = true;
+    }
+  }
+
+  LogicalKeyboardKey _nextRandomInput() {
+    if (_inputBag.isEmpty) {
+      _inputBag.addAll([
+        LogicalKeyboardKey.arrowLeft,
+        LogicalKeyboardKey.arrowLeft,
+        LogicalKeyboardKey.arrowLeft,
+        LogicalKeyboardKey.arrowRight,
+        LogicalKeyboardKey.arrowRight,
+        LogicalKeyboardKey.arrowRight,
+      ]);
+      _inputBag.shuffle(_random);
+    }
+    return _inputBag.removeLast();
+  }
+
+  FacePart _randomFacePart() {
+    if (_partTypeBag.isEmpty) {
+      _partTypeBag.addAll([
+        PartType.eye,
+        PartType.eye,
+        PartType.eye,
+        PartType.eye,
+        PartType.mouth,
+        PartType.mouth,
+      ]);
+      _partTypeBag.shuffle(_random);
+    }
+
+    final partType = _partTypeBag.removeLast();
+
+    if (partType == PartType.eye) {
+      // It would be nice to dynamically figure out how many pieces were loaded,
+      // but it's a game jam.
+      final int index = _random.nextInt(_numberOfEyes) + 1;
+      return FacePart(PartType.eye, Flame.images.fromCache('eye$index.png'));
+    } else {
+      final int index = _random.nextInt(_numberOfMouths) + 1;
+      return FacePart(
+        PartType.mouth,
+        Flame.images.fromCache('mouth$index.png'),
+      );
     }
   }
 }
@@ -323,7 +364,7 @@ class _CatchState extends _State with KeyboardHandler {
 
     // Move the part into the middle of the screen as it's reeled in.
     _part =
-        _randomFacePart()
+        game.world._randomFacePart()
           ..position = Vector2(game.size.x / 2, game.size.y + 100)
           ..add(
             MoveToEffect(
@@ -381,21 +422,6 @@ class _CatchState extends _State with KeyboardHandler {
       }
     }
     return false;
-  }
-
-  FacePart _randomFacePart() {
-    if (_random.nextDouble() < 0.5) {
-      // It would be nice to dynamically figure out how many pieces were loaded,
-      // but it's a game jam.
-      final int index = _random.nextInt(_numberOfEyes) + 1;
-      return FacePart(PartType.eye, Flame.images.fromCache('eye$index.png'));
-    } else {
-      final int index = _random.nextInt(_numberOfMouths) + 1;
-      return FacePart(
-        PartType.mouth,
-        Flame.images.fromCache('mouth$index.png'),
-      );
-    }
   }
 }
 
