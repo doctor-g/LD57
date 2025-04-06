@@ -32,7 +32,11 @@ class TitleOverlay extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Container(
-        color: Colors.blue,
+        padding: EdgeInsets.all(20.0),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10.0),
+          color: Colors.blue,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
