@@ -405,7 +405,21 @@ class _EndState extends _State with KeyboardHandler {
   @override
   FutureOr<void> onLoad() async {
     await super.onLoad();
-    add(TextComponent(text: 'Your face is full! Press up to reset.'));
+    add(
+      ArrowSpriteComponent(ArrowSpriteType.up)
+        ..position = Vector2(0.75 * game.size.x, 0.3 * game.size.y)
+        ..opacity = 0.0
+        ..add(
+          OpacityEffect.to(
+            1.0,
+            EffectController(
+              duration: 0.8,
+              curve: Curves.easeIn,
+              startDelay: 1.0,
+            ),
+          ),
+        ),
+    );
   }
 
   @override
